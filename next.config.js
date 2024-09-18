@@ -36,6 +36,22 @@ const headers = [
       .replace(/\s{2,}/g, ' ')
       .trim(),
   },
+  {
+    key: 'X-Frame-Options',
+    value: 'SAMEORIGIN',
+  },
+  {
+    key: 'X-Content-Type-Options',
+    value: 'nosniff',
+  },
+  {
+    key: 'Referrer-Policy',
+    value: 'same-origin',
+  },
+  {
+    key: 'Permissions-Policy',
+    value: 'geolocation=(), browsing-topics=()',
+  },
 ];
 
 if (forceSSL) {
