@@ -15,10 +15,10 @@ const frameAncestors = process.env.ALLOWED_FRAME_URLS;
 const privateMode = process.env.PRIVATE_MODE;
 const trackerScriptName = process.env.TRACKER_SCRIPT_NAME;
 
+// const nonce = Buffer.from(crypto.randomUUID()).toString('base64');
+
 const contentSecurityPolicy = [
-  `default-src 'self'`,
   `img-src * data:`,
-  `script-src 'self' 'unsafe-eval' 'unsafe-inline'`,
   `style-src 'self' 'unsafe-inline'`,
   `connect-src 'self' api.umami.is cloud.umami.is`,
   `frame-ancestors 'self' ${frameAncestors}`,

@@ -41,6 +41,7 @@
     "import/no-anonymous-default-export": "off",
     "import/no-named-as-default": "off",
     "@next/next/no-img-element": "off",
+    "@next/next/no-async-client-component": "off",
     "@typescript-eslint/no-empty-function": "off",
     "@typescript-eslint/no-explicit-any": "off",
     "@typescript-eslint/no-var-requires": "off",

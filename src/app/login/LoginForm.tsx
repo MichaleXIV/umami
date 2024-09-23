@@ -15,7 +15,15 @@ import { setClientAuthToken } from 'lib/client';
 import Logo from 'assets/logo.svg';
 import styles from './LoginForm.module.css';
 
+import { useGoogleReCaptcha } from 'react-google-recaptcha-v3';
+
+import axios from 'axios';
+import { useState } from 'react';
+
 export function LoginForm() {
+  const { executeRecaptcha } = useGoogleReCaptcha();
+  const [errorCaptcha, setErrorCaptcha] = useState<string>('');
+
   const { formatMessage, labels, getMessage } = useMessages();
   const router = useRouter();
   const { post, useMutation } = useApi();
@@ -24,6 +32,37 @@ export function LoginForm() {
   });
 
   const handleSubmit = async (data: any) => {
+    setErrorCaptcha('');
+
+    if (!executeRecaptcha) {
+      // eslint-disable-next-line no-console
+      console.log('ReCAPTCHA not available');
+      return;
+    }
+
+    const gRecaptchaToken = await executeRecaptcha('loginSubmit');
+
+    try {
+      const response = await axios.post(
+        '/api/recaptchaVerify',
+        {
+          gRecaptchaToken,
+        },
+        {
+          headers: {
+            Accept: 'application/json, text/plain, */*',
+            'Content-Type': 'application/json',
+          },
+        },
+      );
+
+      if (!response.data.success) {
+        setErrorCaptcha('Login Failed. Please try again.');
+      }
+    } catch (error) {
+      setErrorCaptcha('An error occurred. Please try again.');
+    }
+
     mutate(data, {
       onSuccess: async ({ token, user }) => {
         setClientAuthToken(token);
@@ -40,7 +79,12 @@ export function LoginForm() {
         <Logo />
       </Icon>
       <div className={styles.title}>umami</div>
-      <Form className={styles.form} onSubmit={handleSubmit} error={getMessage(error)}>
+      <Form
+        className={styles.form}
+        onSubmit={handleSubmit}
+        error={getMessage(error) ?? errorCaptcha}
+        preventSubmit={true}
+      >
         <FormRow label={formatMessage(labels.username)}>
           <FormInput
             data-test="input-username"

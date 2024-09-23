@@ -8,7 +8,13 @@ import 'styles/locale.css';
 import 'styles/index.css';
 import 'styles/variables.css';
 
+import Script from 'next/script';
+import { headers } from 'next/headers';
+
 export default function ({ children }) {
+  const headerList = headers();
+  const nonce = headerList.get('x-nonce') || '';
+
   return (
     <html lang="en" data-scroll="0">
       <head>
@@ -24,6 +30,7 @@ export default function ({ children }) {
         <meta name="robots" content="noindex,nofollow" />
       </head>
       <body>
+        <Script id="nonce" nonce={nonce}></Script>
         <Providers>{children}</Providers>
       </body>
     </html>

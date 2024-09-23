@@ -33,6 +33,34 @@ const schema = {
   }),
 };
 
+const rateLimitMap = new Map();
+
+const RATE_LIMIT_WINDOW = 60 * 60 * 1000; // 1 hour window in milliseconds
+const RATE_LIMIT_MAX_ATTEMPTS = 5; // Allow 5 attempts per window
+
+function rateLimiter(ip: string) {
+  const currentTime = Date.now();
+
+  if (!rateLimitMap.has(ip)) {
+    rateLimitMap.set(ip, { count: 1, firstRequest: currentTime });
+    return true;
+  }
+
+  const { count, firstRequest } = rateLimitMap.get(ip);
+
+  if (currentTime - firstRequest > RATE_LIMIT_WINDOW) {
+    rateLimitMap.set(ip, { count: 1, firstRequest: currentTime });
+    return true;
+  }
+
+  if (count < RATE_LIMIT_MAX_ATTEMPTS) {
+    rateLimitMap.set(ip, { count: count + 1, firstRequest });
+    return true;
+  }
+
+  return false;
+}
+
 export default async (
   req: NextApiRequestQueryBody<any, LoginRequestBody>,
   res: NextApiResponse<LoginResponse>,
@@ -44,6 +72,13 @@ export default async (
   await useValidate(schema, req, res);
 
   if (req.method === 'POST') {
+    const clientIP = req.headers['x-forwarded-for'] || req.socket.remoteAddress;
+
+    // Apply rate limiter
+    if (!rateLimiter(clientIP)) {
+      return res.status(429).json({ message: 'Too many requests. Try again later.' });
+    }
+
     const { username, password } = req.body;
 
     const user = await getUserByUsername(username, { includePassword: true });
