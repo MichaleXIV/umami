@@ -11,6 +11,7 @@ import {
   methodNotAllowed,
   ok,
   unauthorized,
+  tooManyRequest,
 } from 'next-basics';
 import { getUserByUsername } from 'queries';
 import * as yup from 'yup';
@@ -76,7 +77,7 @@ export default async (
 
     // Apply rate limiter
     if (!rateLimiter(clientIP)) {
-      return res.status(429).json({ message: 'Too many requests. Try again later.' });
+      return tooManyRequest(res, 'Too many requests. Try again later.');
     }
 
     const { username, password } = req.body;
